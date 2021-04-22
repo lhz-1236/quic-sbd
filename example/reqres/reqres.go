@@ -18,7 +18,7 @@ import (
 	"github.com/lucas-clemente/quic-go/internal/utils"
 )
 
-var addr = "localhost:4242"
+var addr = "localhost:4435"
 
 const (
 	MsgLen    = 750
@@ -28,7 +28,7 @@ const (
 // We start a server echoing data on the first stream the client opens,
 // then connect with a client, send the message, and wait for its receipt.
 func main() {
-	addrF := flag.String("addr", "localhost:4242", "Address to bind")
+	addrF := flag.String("addr", "localhost:4435", "Address to bind")
 	verbose := flag.Bool("v", false, "Verbose mode")
 	flag.Parse()
 	addr = *addrF

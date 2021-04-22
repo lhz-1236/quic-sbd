@@ -112,7 +112,10 @@ type session struct {
 
 	sessionCreationTime     time.Time
 	lastNetworkActivityTime time.Time
-
+	//*****************
+	sbdBeginTime            time.Time
+	sbdcount                int
+	//*****************
 	timer           *utils.Timer
 	// keepAlivePingSent stores whether a Ping frame was sent to the peer or not
 	// it is reset as soon as we receive a packet from the peer
@@ -200,7 +203,9 @@ func (s *session) setup(
 	now := time.Now()
 	s.lastNetworkActivityTime = now
 	s.sessionCreationTime = now
-
+	//********
+	s.sbdBeginTime = now
+	//********
 	s.connectionParameters = handshake.NewConnectionParamatersManager(
 		s.perspective,
 		s.version,
@@ -390,7 +395,63 @@ runLoop:
 			}
 			timerPth = nil
 		}
+		//******
+		sntPkts1 :=make(map[protocol.PathID]uint64)
+		if now.Sub(s.sbdBeginTime) >= 350*time.Millisecond{
+			s.sbdBeginTime = now
+			s.sbdcount++
+			//if s.sbdcount == 50&&s.createPaths{
+			if s.sbdcount == 50&&len(s.pathManager.oliaSenders)>=1{
 
+				s.sbdcount = 0
+				//count从0开始，count=10说明已经观察了10个周期
+				sntPkts :=make(map[protocol.PathID]uint64)
+				sntLost :=make(map[protocol.PathID]uint64)
+				sntre :=make(map[protocol.PathID]uint64)
+				for pathID, pth := range s.paths {
+					if(pathID == 0){
+						continue
+					}
+					sntPkts[pathID], sntre[pathID], sntLost[pathID] = pth.sentPacketHandler.GetStatistics()
+					s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_ack[0]=s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_ack[1]
+					s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_ack[1]=sntPkts[pathID]
+					s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_loss1[0]=s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_loss1[1]
+					s.pathManager.oliaSenders[pathID].Olia.SBD.Pac_loss1[1]=sntLost[pathID]
+					utils.Infof("Path %x: sent %d  lost %d;", pathID, sntPkts[pathID],sntLost[pathID])
+					//fmt.Println(sntPkts[pathID])
+				}
+				//for pathID,os :=range s.pathManager.oliaSenders{
+				//	os.Olia.SBD.Pac_ack[0] = os.Olia.SBD.Pac_ack[1]
+				//	os.Olia.SBD.Pac_ack[1] = sntPkts[pathID]
+				//	os.Olia.SBD.Pac_loss1[0] = os.Olia.SBD.Pac_loss1[1]
+				//	os.Olia.SBD.Pac_loss1[1] = sntLost[pathID]
+				//	//utils.Infof("Path %x: sent %d lost %d;", pathID, os.Olia.SBD.Pac_ack, os.Olia.SBD.Pac_loss1)
+				//}
+				for _,os :=range s.pathManager.oliaSenders{
+					os.Clearset()
+					//此函数负责将之前的set集合清空
+					os.CalculateParameter()
+					//此函数负责计算决策所需变量
+					os.SbdDecision()
+					//此函数进行决策
+					break
+				}
+			}
+			if s.sbdcount == 50&&len(s.paths)==1{
+			{
+				  s.sbdcount = 0
+					a, _, _ := s.paths[0].sentPacketHandler.GetStatistics()
+					utils.Infof("Path %x: sent %d;", 0, a-sntPkts1[0])
+					sntPkts1[0]=a
+					//fmt.Println(sntPkts[pathID])
+				}
+						}
+			for _,os :=range s.pathManager.oliaSenders{
+				os.Olia.SBD.Sbdcount=s.sbdcount
+			}
+		}
+
+		//******
 		if !s.pathManagerLaunched && s.handshakeComplete {
 			// XXX (QDC): for benchmark tests
 			if s.pathManager != nil {
@@ -441,6 +502,7 @@ runLoop:
 	defer s.ctxCancel()
 	return closeErr.err
 }
+
 
 func (s *session) Context() context.Context {
 	return s.ctx
@@ -631,7 +693,9 @@ func (s *session) handleRstStreamFrame(frame *wire.RstStreamFrame) error {
 
 func (s *session) handleAckFrame(frame *wire.AckFrame) error {
 	pth := s.paths[frame.PathID]
-	err := pth.sentPacketHandler.ReceivedAck(frame, pth.lastRcvdPacketNumber, pth.lastNetworkActivityTime)
+
+	err := pth.sentPacketHandler.ReceivedAck(frame, pth.lastRcvdPacketNumber, pth.lastNetworkActivityTime,s.sbdcount)
+
 	if err == nil && pth.rttStats.SmoothedRTT() > s.rttStats.SmoothedRTT() {
 		// Update the session RTT, which comes to take the max RTT on all paths
 		s.rttStats.UpdateSessionRTT(pth.rttStats.SmoothedRTT())

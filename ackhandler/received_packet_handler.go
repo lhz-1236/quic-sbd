@@ -26,7 +26,12 @@ type receivedPacketHandler struct {
 	lastAck                                    *wire.AckFrame
 
 	version protocol.VersionNumber
+  //******
 
+	owdtimestamp map[protocol.PacketNumber]time.Time
+	lastowdtimestamp map[protocol.PacketNumber]time.Time
+
+  //******
 	packets uint64
 }
 
@@ -47,7 +52,14 @@ func (h *receivedPacketHandler) ReceivedPacket(packetNumber protocol.PacketNumbe
 	if packetNumber == 0 {
 		return errInvalidPacketNumber
 	}
-
+	if shouldInstigateAck{
+		//******
+		if h.owdtimestamp==nil{
+			h.owdtimestamp = make(map[protocol.PacketNumber]time.Time)
+		}
+		h.owdtimestamp[packetNumber] = time.Now()
+		//******
+	}
 	// A new packet was received on that path and passes checks, so count it for stats
 	h.packets++
 
@@ -64,6 +76,7 @@ func (h *receivedPacketHandler) ReceivedPacket(packetNumber protocol.PacketNumbe
 		return err
 	}
 	h.maybeQueueAck(packetNumber, shouldInstigateAck)
+
 	return nil
 }
 
@@ -120,6 +133,7 @@ func (h *receivedPacketHandler) maybeQueueAck(packetNumber protocol.PacketNumber
 		// cancel the ack alarm
 		h.ackAlarm = time.Time{}
 	}
+
 }
 
 func (h *receivedPacketHandler) GetAckFrame() *wire.AckFrame {
@@ -128,12 +142,22 @@ func (h *receivedPacketHandler) GetAckFrame() *wire.AckFrame {
 	}
 
 	ackRanges := h.packetHistory.GetAckRanges()
+
+	var o map[protocol.PacketNumber]time.Time
+	o = make(map[protocol.PacketNumber]time.Time)
+	for number,stamp :=range h.lastowdtimestamp{
+		o[number] = stamp
+	}
+	for number,stamp :=range h.owdtimestamp{
+		o[number] = stamp
+	}
 	ack := &wire.AckFrame{
 		LargestAcked:       h.largestObserved,
 		LowestAcked:        ackRanges[len(ackRanges)-1].First,
+		Owdtimestamp:       o,
 		PacketReceivedTime: h.largestObservedReceivedTime,
 	}
-
+  //h.owdtimestamp = []time.Time{}
 	if len(ackRanges) > 1 {
 		ack.AckRanges = ackRanges
 	}
@@ -141,6 +165,8 @@ func (h *receivedPacketHandler) GetAckFrame() *wire.AckFrame {
 	h.lastAck = ack
 	h.ackAlarm = time.Time{}
 	h.ackQueued = false
+  h.lastowdtimestamp = h.owdtimestamp
+	h.owdtimestamp = make(map[protocol.PacketNumber]time.Time)
 	h.packetsReceivedSinceLastAck = 0
 	h.retransmittablePacketsReceivedSinceLastAck = 0
 

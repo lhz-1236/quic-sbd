@@ -3,6 +3,7 @@ package congestion
 import (
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
+	"time"
 )
 
 const scale uint = 10
@@ -17,9 +18,42 @@ type Olia struct {
 	loss3 protocol.ByteCount
 	epsilonNum int
 	epsilonDen uint32
+	//if in BNotM epsilonNum = 1
+	//if in MNotB epsilonNum = -1
+	//else epsilonNum = 0
+	//epsilonDen = len(all)*len(set)
 	sndCwndCnt int
+	SBD Sbd
 	// We need to keep a reference to all paths
 }
+//********************************************************
+type Sbd struct {
+	owd [50][]time.Duration
+	owd1 []time.Duration
+	owd2 time.Duration
+	//skew_base [10]int
+	skew_est float64
+	var_est time.Duration
+	freq_est float64
+	//count int
+	Sbdcount int
+	//the number of losspackets
+	Pac_loss1 [2]uint64
+
+  Pac_ack [2]uint64
+  pac_est float64
+	dur time.Duration
+	count float64
+}
+//******
+//******
+func (o *Olia)UpdateSbdVar(owd time.Duration){
+	if owd >0 {
+		o.SBD.owd[o.SBD.Sbdcount] = append(o.SBD.owd[o.SBD.Sbdcount], owd)
+	}
+}
+
+//*****************************************************************************************
 
 func NewOlia(ackedBytes protocol.ByteCount) *Olia {
 	o := &Olia{
@@ -29,6 +63,8 @@ func NewOlia(ackedBytes protocol.ByteCount) *Olia {
 		epsilonNum: 0,
 		epsilonDen: 1,
 		sndCwndCnt: 0,
+		SBD:        Sbd{},
+
 	}
 	return o
 }
@@ -44,6 +80,7 @@ func (o *Olia) Reset() {
 	o.epsilonNum = 0
 	o.epsilonDen = 1
 	o.sndCwndCnt = 0
+  o.SBD = Sbd{}
 }
 
 func (o *Olia) SmoothedBytesBetweenLosses() protocol.ByteCount {
@@ -79,6 +116,7 @@ func (o *Olia) CongestionWindowAfterAck(currentCongestionWindow protocol.PacketN
 	} else {
 		incNum := uint64(o.epsilonNum) * uint64(rate) + uint64(o.epsilonDen) * cwndScaled * cwndScaled
 		o.sndCwndCnt += int(oliaScale(incNum, scale) / uint64(incDen))
+
 	}
 
 	if o.sndCwndCnt >= (1 << scale) - 1 {
@@ -88,5 +126,6 @@ func (o *Olia) CongestionWindowAfterAck(currentCongestionWindow protocol.PacketN
 		newCongestionWindow = utils.MaxPacketNumber(1, currentCongestionWindow - 1)
 		o.sndCwndCnt = 0
 	}
+
 	return newCongestionWindow
 }

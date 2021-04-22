@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="f0b5a2c3-224e-45b9-a968-9165b6cf3304" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/ackhandler/interfaces.go" beforeDir="false" afterPath="$PROJECT_DIR$/ackhandler/interfaces.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ackhandler/received_packet_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/ackhandler/received_packet_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ackhandler/sent_packet_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/ackhandler/sent_packet_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/congestion/cubic_sender.go" beforeDir="false" afterPath="$PROJECT_DIR$/congestion/cubic_sender.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/congestion/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/congestion/interface.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/congestion/olia.go" beforeDir="false" afterPath="$PROJECT_DIR$/congestion/olia.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/congestion/olia_sender.go" beforeDir="false" afterPath="$PROJECT_DIR$/congestion/olia_sender.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/echo/echo.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/echo/echo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/reqres/client/reqres.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/reqres/client/reqres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/reqres/reqres.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/reqres/reqres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/flowcontrol/flow_control_manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/flowcontrol/flow_control_manager_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/flowcontrol/flow_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/flowcontrol/flow_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/handshake/crypto_setup_client.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/handshake/crypto_setup_client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/handshake/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/handshake/interface.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/handshake/server_config_client.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/handshake/server_config_client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/wire/ack_frame.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/wire/ack_frame.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/wire/add_address_frame.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/wire/add_address_frame.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/wire/paths_frame.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/wire/paths_frame.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packet_packer.go" beforeDir="false" afterPath="$PROJECT_DIR$/packet_packer.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/path_manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/path_manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qnet/client/main-exp-large-file-mp.go" beforeDir="false" afterPath="$PROJECT_DIR$/qnet/client/main-exp-large-file-mp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qnet/client/main-exp-large-file.go" beforeDir="false" afterPath="$PROJECT_DIR$/qnet/client/main-exp-large-file.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qnet/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/qnet/server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/session.go" beforeDir="false" afterPath="$PROJECT_DIR$/session.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1kNHDsUoZHcJvdOcCW4lSzlI81Y" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+  </component>
+  <component name="RunManager" selected="Go Build.go build main-exp-large-file.go">
+    <configuration name="go build echo.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="quic-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/example/echo/echo.go" />
+      <package value="github.com/lucas-clemente/quic-go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main-exp-large-file.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="quic-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/qnet/client/main-exp-large-file.go" />
+      <package value="github.com/lucas-clemente/quic-go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="quic-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/qnet/server/main.go" />
+      <package value="github.com/lucas-clemente/quic-go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build reqres.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="quic-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/example/reqres/client/reqres.go" />
+      <package value="github.com/lucas-clemente/quic-go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build reqres.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="quic-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/example/reqres/reqres.go" />
+      <package value="github.com/lucas-clemente/quic-go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main-exp-large-file.go" />
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build echo.go" />
+        <item itemvalue="Go Build.go build reqres.go (1)" />
+        <item itemvalue="Go Build.go build reqres.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="592" y="262" width="380" height="402" key="FileChooserDialogImpl" timestamp="1618198919806">
+      <screen x="67" y="27" width="1373" height="873" />
+    </state>
+    <state x="592" y="262" width="380" height="402" key="FileChooserDialogImpl/67.27.1373.873@67.27.1373.873" timestamp="1618198919806" />
+    <state x="776" y="311" width="424" height="484" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1616141837740" />
+  </component>
+</project>

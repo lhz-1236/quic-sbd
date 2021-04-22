@@ -177,7 +177,8 @@ func (h *sentPacketHandler) SentPacket(packet *Packet) error {
 	return nil
 }
 
-func (h *sentPacketHandler) ReceivedAck(ackFrame *wire.AckFrame, withPacketNumber protocol.PacketNumber, rcvTime time.Time) error {
+func (h *sentPacketHandler) ReceivedAck(ackFrame *wire.AckFrame, withPacketNumber protocol.PacketNumber, rcvTime time.Time,count int) error {
+
 	if ackFrame.LargestAcked > h.lastSentPacketNumber {
 		return errAckForUnsentPacket
 	}
@@ -204,15 +205,16 @@ func (h *sentPacketHandler) ReceivedAck(ackFrame *wire.AckFrame, withPacketNumbe
 		h.congestion.MaybeExitSlowStart()
 	}
 
-	ackedPackets, err := h.determineNewlyAckedPackets(ackFrame)
+	ackedPackets, OWD,err := h.determineNewlyAckedPackets(ackFrame)
 	if err != nil {
 		return err
 	}
 
+
 	if len(ackedPackets) > 0 {
-		for _, p := range ackedPackets {
+		for m, p := range ackedPackets {
 			h.onPacketAcked(p)
-			h.congestion.OnPacketAcked(p.Value.PacketNumber, p.Value.Length, h.bytesInFlight)
+			h.congestion.OnPacketAcked(p.Value.PacketNumber, p.Value.Length, h.bytesInFlight,OWD[m],count,h.losses)
 		}
 	}
 
@@ -252,7 +254,7 @@ func (h *sentPacketHandler) ReceivedClosePath(f *wire.ClosePathFrame, withPacket
 	if len(ackedPackets) > 0 {
 		for _, p := range ackedPackets {
 			h.onPacketAcked(p)
-			h.congestion.OnPacketAcked(p.Value.PacketNumber, p.Value.Length, h.bytesInFlight)
+			h.congestion.OnPacketAcked(p.Value.PacketNumber, p.Value.Length, h.bytesInFlight,time.Duration(0),0,h.losses)
 		}
 	}
 
@@ -264,9 +266,12 @@ func (h *sentPacketHandler) ReceivedClosePath(f *wire.ClosePathFrame, withPacket
 	return nil
 }
 
-func (h *sentPacketHandler) determineNewlyAckedPackets(ackFrame *wire.AckFrame) ([]*PacketElement, error) {
+func (h *sentPacketHandler) determineNewlyAckedPackets(ackFrame *wire.AckFrame) ([]*PacketElement, []time.Duration,error) {
 	var ackedPackets []*PacketElement
+	var owd []time.Duration
+
 	ackRangeIndex := 0
+
 	for el := h.packetHistory.Front(); el != nil; el = el.Next() {
 		packet := el.Value
 		packetNumber := packet.PacketNumber
@@ -290,16 +295,33 @@ func (h *sentPacketHandler) determineNewlyAckedPackets(ackFrame *wire.AckFrame) 
 
 			if packetNumber >= ackRange.First { // packet i contained in ACK range
 				if packetNumber > ackRange.Last {
-					return nil, fmt.Errorf("BUG: ackhandler would have acked wrong packet 0x%x, while evaluating range 0x%x -> 0x%x", packetNumber, ackRange.First, ackRange.Last)
+					return nil, nil,fmt.Errorf("BUG: ackhandler would have acked wrong packet 0x%x, while evaluating range 0x%x -> 0x%x", packetNumber, ackRange.First, ackRange.Last)
 				}
+
 				ackedPackets = append(ackedPackets, el)
+				//******
+				if ackFrame.Owdtimestamp[packetNumber].Sub(el.Value.SendTime)>0*time.Millisecond{
+					owd = append(owd,ackFrame.Owdtimestamp[packetNumber].Sub(el.Value.SendTime))
+				}else{
+					owd = append(owd,-1*time.Millisecond)
+				}
+				//******
+
 			}
 		} else {
 			ackedPackets = append(ackedPackets, el)
+			//*******
+			if ackFrame.Owdtimestamp[packetNumber].Sub(el.Value.SendTime)>0*time.Millisecond{
+				owd = append(owd,ackFrame.Owdtimestamp[packetNumber].Sub(el.Value.SendTime))
+				//fmt.Println("error:",packetNumber)
+			}else{
+				owd = append(owd,-1*time.Millisecond)
+			}
 		}
+    //********
 	}
 
-	return ackedPackets, nil
+	return ackedPackets, owd, nil
 }
 
 func (h *sentPacketHandler) determineNewlyAckedPacketsClosePath(f *wire.ClosePathFrame) ([]*PacketElement, error) {
@@ -354,7 +376,23 @@ func (h *sentPacketHandler) maybeUpdateRTT(largestAcked protocol.PacketNumber, a
 	}
 	return false
 }
-
+//******
+func (h *sentPacketHandler)computeOWD(largestAcked protocol.PacketNumber,PacketReceivedTime time.Time) []time.Duration{
+	var owd []time.Duration
+	for el := h.packetHistory.Front(); el != nil; el = el.Next() {
+		packet := el.Value
+		if packet.PacketNumber == largestAcked {
+			owd =append(owd,PacketReceivedTime.Sub(packet.SendTime))
+			return owd
+		}
+		// Packets are sorted by number, so we can stop searching
+		if packet.PacketNumber > largestAcked {
+			break
+		}
+	}
+	return owd
+}
+//******
 func (h *sentPacketHandler) hasOutstandingRetransmittablePacket() bool {
 	for el := h.packetHistory.Front(); el != nil; el = el.Next() {
 		if el.Value.IsRetransmittable() {

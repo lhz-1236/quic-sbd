@@ -3,12 +3,16 @@ package wire
 import (
 	"bytes"
 	"errors"
+	//"fmt"
 	"time"
 
 	"github.com/lucas-clemente/quic-go/internal/protocol"
 	"github.com/lucas-clemente/quic-go/internal/utils"
 )
 
+//******
+const time1 = "2006-01-02 15:04:05"
+//******
 var (
 	// ErrInvalidAckRanges occurs when a client sends inconsistent ACK ranges
 	ErrInvalidAckRanges = errors.New("AckFrame: ACK frame contains invalid ACK ranges")
@@ -30,6 +34,7 @@ type AckFrame struct {
 
 	// time when the LargestAcked was receiveid
 	// this field Will not be set for received ACKs frames
+	Owdtimestamp       map[protocol.PacketNumber]time.Time
 	PacketReceivedTime time.Time
 	DelayTime          time.Duration
 }
@@ -59,7 +64,7 @@ func ParseAckFrame(r *bytes.Reader, version protocol.VersionNumber) (*AckFrame, 
 	}
 
 	// U bit used to indicate that the ACK contains PathID
-	if typeByte & 0x10 == 0x10 {
+	if typeByte&0x10 == 0x10 {
 		pathID, err := r.ReadByte()
 		if err != nil {
 			return nil, err
@@ -163,7 +168,21 @@ func ParseAckFrame(r *bytes.Reader, version protocol.VersionNumber) (*AckFrame, 
 	if !frame.validateAckRanges() {
 		return nil, ErrInvalidAckRanges
 	}
+	//******
+	frame.Owdtimestamp = make(map[protocol.PacketNumber]time.Time)
+	str,_ := time.Parse(time1,"2020-11-26 20:30:50")
+	len,_:= utils.GetByteOrder(version).ReadUint32(r)
+  for i :=0; i<int(len) ;i++{
+  	number,_ := utils.GetByteOrder(version).ReadUint64(r)
+		f1,_:= utils.GetByteOrder(version).ReadUint64(r)
+  	frame.Owdtimestamp[protocol.PacketNumber(number)] = str.Add(time.Duration(f1))
+	}
 
+	//fmt.Println(len(frame.Owdtimestamp))
+	//f1,_:= utils.GetByteOrder(version).ReadUint64(r)
+	//frame.PacketReceivedTime =str.Add(time.Duration(f1))
+
+	//******
 	var numTimestamp byte
 	numTimestamp, err = r.ReadByte()
 	if err != nil {
@@ -238,6 +257,8 @@ func (f *AckFrame) Write(b *bytes.Buffer, version protocol.VersionNumber) error 
 	case protocol.PacketNumberLen6:
 		utils.GetByteOrder(version).WriteUint48(b, uint64(f.LargestAcked)&(1<<48-1))
 	}
+
+
 
 	f.DelayTime = time.Since(f.PacketReceivedTime)
 	utils.GetByteOrder(version).WriteUfloat16(b, uint64(f.DelayTime/time.Microsecond))
@@ -341,6 +362,19 @@ func (f *AckFrame) Write(b *bytes.Buffer, version protocol.VersionNumber) error 
 	if numRanges != numRangesWritten {
 		return errors.New("BUG: Inconsistent number of ACK ranges written")
 	}
+
+	//******
+	str,_ := time.Parse(time1,"2020-11-26 20:30:50")
+	utils.GetByteOrder(version).WriteUint32(b, uint32(len(f.Owdtimestamp)))
+	for number,stamp := range f.Owdtimestamp{
+		dur := stamp.Sub(str)
+		utils.GetByteOrder(version).WriteUint64(b, uint64(number))
+		utils.GetByteOrder(version).WriteUint64(b, uint64(dur))
+	}
+	//dur :=f.PacketReceivedTime.Sub(str)
+	//utils.GetByteOrder(version).WriteUint64(b, uint64(dur))
+
+	//******
 
 	b.WriteByte(0) // no timestamps
 	return nil

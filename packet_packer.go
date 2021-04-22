@@ -243,7 +243,6 @@ func (p *packetPacker) composeNextPacket(
 		payloadLength += minLength
 		p.controlFrames = p.controlFrames[:len(p.controlFrames)-1]
 	}
-
 	if payloadLength > maxFrameSize {
 		return nil, fmt.Errorf("Packet Packer BUG: packet payload (%d) too large (%d)", payloadLength, maxFrameSize)
 	}
@@ -333,9 +332,12 @@ func (p *packetPacker) writeAndSealPacket(
 			return nil, err
 		}
 	}
-	if protocol.ByteCount(buffer.Len()+sealer.Overhead()) > protocol.MaxPacketSize {
-		return nil, errors.New("PacketPacker BUG: packet too large")
-	}
+
+	//******
+	//if protocol.ByteCount(buffer.Len()+sealer.Overhead()) > protocol.MaxPacketSize {
+	//	return nil, errors.New("PacketPacker BUG: packet too large")
+	//}
+  //******
 
 	raw = raw[0:buffer.Len()]
 	_ = sealer.Seal(raw[payloadStartIndex:payloadStartIndex], raw[payloadStartIndex:], publicHeader.PacketNumber, raw[:payloadStartIndex])
