@@ -1,5 +1,9 @@
 # A QUIC implementation in pure Go
 
+An implementation of detecting bottleneck sharing
+
+Paper:Revisiting Congestion Control for Multipath TCP with Shared Bottleneck Detection
+
 **Please read https://multipath-quic.org/2017/12/09/artifacts-available.html to figure out how to setup the code.**
 
 <img src="docs/quic.png" width=303 height=124>
